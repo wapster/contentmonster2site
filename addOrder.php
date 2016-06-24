@@ -59,49 +59,112 @@ $client = XML_RPC2_CachedClient::create('https://contentmonster.ru/api/xmlrpc/',
 <?php
 if ( !empty($_POST['create_order']) ) {
 
-    $name = 'Заголовок статьи';
-    $description = 'описание заказа много букв';
+    $string = file( 'keys.txt', FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES );
 
-    $params = array(
-                'site_id' => 10262,
-                'task' => 1,
-                'subject_id' => 29,
-                'write_time_limit' => 36,
-                'len_min' => 300,
-                'len_max' => 600,
-                'write_pay' => 50,
-                'bezprob' => 1,
-                'wmtype' => 1,
-                'payall' => 1,
-                'uniq_status' => 1,
-                'uniq_min' => 85,
-                'name' => $name,
-                'description' => $description,
-                'keywords' => '1key, 2key',
-                'mdesc' => 1,
-                'min_desc' => 30,
-                'max_desc' => 70,
-                'autoselect' => 1,
-                'autoselectlevel' => 3,
-                'nocoment' => 1,
-                'tender_type' => 1,
-                'tender_time_limit' => 36
-              );
+    // Формируем итоговый массив
+    $full_array = array();
 
-    try {
-       $createOrder = $client -> createOrder( $apikey, $params );
-
-       } catch (XML_RPC2_FaultException $e) {
-           die('Exception #' . $e->getFaultCode() . ' : ' . $e->getFaultString());
-       } catch (Exception $e) {
-           die('Exception : ' . $e->getMessage());
-       }
-
-    if ( $createOrder ) {
-        echo "Заказ размещен";
-    } else {
-        echo "ошибка :(";
+    foreach ($string as $fa) {
+        $second_array = explode( '+', $fa );
+        $full_array[] = $second_array;
     }
+
+    foreach ($full_array as $key => $value) {
+
+        $title = $value[0];
+        $desc = 'description';
+        $keywords = '';
+
+        $x = count( $value );
+        if ( $x > 1) {
+
+            // Убираем 1-й элемент массива,
+            //т.к. это основной ключ = название статьи
+            array_shift( $value );
+
+            // и формируем список ключевых слов для статьи
+            $keywords = implode(", " , $value);
+
+            for ($i=1; $i < $x; $i++) {
+
+                $params = array(
+                            'site_id' => 10262,
+                            'task' => 1,
+                            'subject_id' => 29,
+                            'write_time_limit' => 36,
+                            'len_min' => 300,
+                            'len_max' => 600,
+                            'write_pay' => 50,
+                            'bezprob' => 1,
+                            'wmtype' => 1,
+                            'payall' => 1,
+                            'uniq_status' => 1,
+                            'uniq_min' => 85,
+                            'name' => $title,
+                            'description' => $desc,
+                            'keywords' => $keywords,
+                            'mdesc' => 1,
+                            'min_desc' => 30,
+                            'max_desc' => 70,
+                            'autoselect' => 1,
+                            'autoselectlevel' => 3,
+                            'nocoment' => 1,
+                            'tender_type' => 1,
+                            'tender_time_limit' => 36
+                          );
+
+
+            }
+        } else {
+
+            // Если в задании не указаны ключевые слова
+            $params = array(
+                        'site_id' => 10262,
+                        'task' => 1,
+                        'subject_id' => 29,
+                        'write_time_limit' => 36,
+                        'len_min' => 300,
+                        'len_max' => 600,
+                        'write_pay' => 50,
+                        'bezprob' => 1,
+                        'wmtype' => 1,
+                        'payall' => 1,
+                        'uniq_status' => 1,
+                        'uniq_min' => 85,
+                        'name' => $title,
+                        'description' => $desc,
+                        'keywords' => $keywords,
+                        'mdesc' => 1,
+                        'min_desc' => 30,
+                        'max_desc' => 70,
+                        'autoselect' => 1,
+                        'autoselectlevel' => 3,
+                        'nocoment' => 1,
+                        'tender_type' => 1,
+                        'tender_time_limit' => 36
+                      );
+        }
+
+
+        try {
+           $createOrder = $client -> createOrder( $apikey, $params );
+
+           } catch (XML_RPC2_FaultException $e) {
+               die('Exception #' . $e->getFaultCode() . ' : ' . $e->getFaultString());
+           } catch (Exception $e) {
+               die('Exception : ' . $e->getMessage());
+           }
+
+        if ( $createOrder ) {
+            echo "Заказ размещен<br>";
+        } else {
+            echo "ошибка :(<br>";
+        }
+
+    }
+
+
+
 }
 ?>
 
